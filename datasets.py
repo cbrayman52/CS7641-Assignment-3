@@ -4,7 +4,7 @@ from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 
-def get_datasets():
+def get_datasets(rs):
     #############
     # Dataset 1 #
     #############
@@ -40,7 +40,7 @@ def get_datasets():
     y = wine_quality['quality']
 
     # Split the dataset
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, stratify=y, random_state=None)
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, stratify=y, random_state=rs)
 
     # Preprocess the data (Standard Scaling)
     scaler = StandardScaler()
@@ -50,12 +50,12 @@ def get_datasets():
     y_train = y_train.values
     y_test = y_test.values
 
-    dataset1 = {"x_train": x_train,
-                "x_train_scaled": x_train_scaled,
-                "x_test": x_test,
-                "x_test_scaled": x_test_scaled, 
-                "y_train": y_train,
-                "y_test": y_test}
+    dataset1 = {"x1_train": x_train,
+                "x1_train_scaled": x_train_scaled,
+                "x1_test": x_test,
+                "x1_test_scaled": x_test_scaled, 
+                "y1_train": y_train,
+                "y1_test": y_test}
 
 
     #############
@@ -68,7 +68,7 @@ def get_datasets():
                                 n_classes=5,
                                 flip_y=0.1,
                                 class_sep=2,
-                                random_state=None)
+                                random_state=rs)
 
     # Add noise to the dataset
     x2 += np.random.normal(scale=0.5, size=x2.shape)
@@ -83,7 +83,7 @@ def get_datasets():
     y2 = pd.DataFrame(y2, columns=['target']).squeeze()
 
     # Split the data into training and testing sets
-    x2_train, x2_test, y2_train, y2_test = train_test_split(x2, y2, test_size=0.25)
+    x2_train, x2_test, y2_train, y2_test = train_test_split(x2, y2, test_size=0.2, random_state=rs)
 
     # Scale features
     scaler = StandardScaler()
