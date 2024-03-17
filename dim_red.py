@@ -6,7 +6,6 @@ from sklearn.random_projection import GaussianRandomProjection
 from sklearn.manifold import Isomap
 from sklearn.metrics import mean_squared_error
 
-
 def perform_pca(dataset, x, rs):
     eigenvalues = []
     max_components = x.shape[1]
