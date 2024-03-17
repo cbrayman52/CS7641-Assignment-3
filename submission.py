@@ -33,26 +33,43 @@ dataset1, dataset2 = get_datasets(rs)
 #########################################################################################################
 
 # PCA
-dim_red.perform_pca('Wine Quality', dataset1['x1_train_scaled'], rs)
-dim_red.perform_pca('Generated Dataset', dataset2['x2_train_scaled'], rs)
+num_components = dim_red.perform_pca('Wine Quality', dataset1['x1_train_scaled'], rs)
+num_components = dim_red.perform_pca('Generated Dataset', dataset2['x2_train_scaled'], rs)
 
 # ICA
-dim_red.perform_ica('Wine Quality', dataset1['x1_train_scaled'], rs)
-dim_red.perform_ica('Generated Dataset', dataset2['x2_train_scaled'], rs)
-
+num_components = dim_red.perform_ica('Wine Quality', dataset1['x1_train_scaled'], rs)
+num_components = dim_red.perform_ica('Generated Dataset', dataset2['x2_train_scaled'], rs)
 
 # Randomized Projections
-dim_red.perform_rp('Wine Quality', dataset1['x1_train_scaled'], rs)
-dim_red.perform_rp('Generated Dataset', dataset2['x2_train_scaled'], rs)
+num_components = dim_red.perform_rp('Wine Quality', dataset1['x1_train_scaled'], rs)
+num_components = dim_red.perform_rp('Generated Dataset', dataset2['x2_train_scaled'], rs)
 
 # Isomap
-dim_red.perform_isomap('Wine Quality', dataset1['x1_train_scaled'])
-dim_red.perform_isomap('Generated Dataset', dataset2['x2_train_scaled'])
+num_components = dim_red.perform_isomap('Wine Quality', dataset1['x1_train_scaled'])
+num_components = dim_red.perform_isomap('Generated Dataset', dataset2['x2_train_scaled'])
 
 #########################################################################################################
 # 3. Re-apply the clustering algorithms on the set of dimensionality reduction datasets. This will      #
 #    result in 16 combinations of results of datasets, dimensionality reduction, and clustering methods.#
 #########################################################################################################
+
+# PCA - Guassian Mixture Model - Dataset 1
+# pca = PCA(n_components=8, random_state=rs)
+# pca.fit(dataset1['x1_train_scaled'])
+# gaussian_mixture.cluster_performance_evaluation('Wine Quality', dataset1['x1_train_scaled'], rs)
+# PCA - K Means - Dataset 1
+
+# ICA - Guassian Mixture Model - Dataset 1
+
+# ICA - K Means - Dataset 1
+
+# Randomized Projections - Guassian Mixture Model - Dataset 1
+
+# Randomized Projections - K Means - Dataset 1
+
+# Isomap - Guassian Mixture Model - Dataset 1
+
+# Isomap - K Means - Dataset 1
 
 
 #########################################################################################################
