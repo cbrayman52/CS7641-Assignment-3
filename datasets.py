@@ -67,7 +67,7 @@ def get_datasets(rs):
                                 n_redundant=3,
                                 n_classes=5,
                                 flip_y=0.1,
-                                class_sep=2,
+                                class_sep=4,
                                 random_state=rs)
 
     # Add noise to the dataset
