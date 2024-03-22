@@ -1,40 +1,50 @@
+import time
 import numpy as np
 import pandas as pd
 
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import RepeatedStratifiedKFold
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+from sklearn.model_selection import train_test_split, ShuffleSplit
+from sklearn.model_selection import learning_curve
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
 import matplotlib.pyplot as plt
 
 def pooled_var(stds):
     return np.sqrt(sum((4)*(stds**2))/ len(stds)*(4))
 
-def learning_curves(dataset, x_train, x_test, y_train, y_test, rs=None):
-    mlp = MLPClassifier(max_iter=100, random_state=rs)
+def learning_curves(dataset, x, y, rs=None):
 
-    # Train the classifier and store accuracy at each iteration
-    train_accuracies = []
-    test_accuracies = []
+    # Define MLP classifier
+    mlp = MLPClassifier(max_iter=1000, random_state=rs)
 
-    for i in range(1, mlp.max_iter + 1):
-        mlp.partial_fit(x_train, y_train, classes=np.unique(y_train))
-        y_train_pred = mlp.predict(x_train)
-        y_test_pred = mlp.predict(x_test)
-        
-        train_accuracy = accuracy_score(y_train, y_train_pred)
-        test_accuracy = accuracy_score(y_test, y_test_pred)
-        
-        train_accuracies.append(train_accuracy)
-        test_accuracies.append(test_accuracy)
+    # Create cross-validation iterator
+    cv = ShuffleSplit(n_splits=5, test_size=0.2, random_state=rs)
 
-    plt.plot()
-    plt.plot(range(1, mlp.max_iter + 1), train_accuracies, label='Training Accuracy')
-    plt.plot(range(1, mlp.max_iter + 1), test_accuracies, label='Test Accuracy')
-    plt.xlabel('Number of Iterations')
-    plt.ylabel('Accuracy')
+    # Define training sizes for learning curve
+    train_sizes = np.linspace(0.1, 1.0, 10)
+
+    # Generate learning curves
+    train_sizes_abs, train_scores, val_scores = learning_curve(mlp, x, y, train_sizes=train_sizes, cv=cv)
+
+    # Calculate mean and standard deviation of scores
+    train_scores_mean = np.mean(train_scores, axis=1)
+    train_scores_std = np.std(train_scores, axis=1)
+    val_scores_mean = np.mean(val_scores, axis=1)
+    val_scores_std = np.std(val_scores, axis=1)
+
+    # Plot learning curves
+    plt.title("MLP Learning Curves")
+    plt.xlabel("Training Examples")
+    plt.ylabel("Score")
+    plt.grid()
+    plt.fill_between(train_sizes_abs, train_scores_mean - train_scores_std,
+                    train_scores_mean + train_scores_std, alpha=0.1)
+    plt.fill_between(train_sizes_abs, val_scores_mean - val_scores_std,
+                    val_scores_mean + val_scores_std, alpha=0.1,)
+    plt.plot(train_sizes_abs, train_scores_mean, 'o-', label="Training score")
+    plt.plot(train_sizes_abs, val_scores_mean, 'o-', label="Cross-validation score")
     plt.legend(loc="best")
     plt.title('Neural Networks Learning Curve - Wine Quality')
     plt.savefig(f'Images/{dataset}/Learning Curves.png')
@@ -43,7 +53,7 @@ def learning_curves(dataset, x_train, x_test, y_train, y_test, rs=None):
 
 def validation_curves(dataset, x, y, rs=None):
     # Define the parameters to optimize
-    params = {'hidden_layer_sizes': [(50,), (20,), (10,)],
+    params = {'hidden_layer_sizes': [(10,), (5,), (5,5)],
               'activation': ['tanh', 'relu', 'identity', 'logistic'],
               'solver': ['sgd', 'adam', 'lbfgs'],
               'learning_rate': ['constant','adaptive', 'invscaling'],
@@ -131,17 +141,17 @@ def validation_curves(dataset, x, y, rs=None):
 def accuracy_curves(dataset, x, y, rs=None):
 
     mlp = MLPClassifier(
-        hidden_layer_sizes=(10,), 
-        activation='relu', 
+        hidden_layer_sizes=(5,5), 
+        activation='tanh', 
         solver='adam', 
         alpha=0.0001, 
         batch_size='auto', 
         learning_rate='constant', 
         learning_rate_init=0.01, 
         power_t=0.5, 
-        max_iter=100, 
+        max_iter=1, 
         shuffle=True, 
-        random_state=4, 
+        random_state=rs, 
         tol=1e-4, 
         verbose=False, 
         warm_start=False, 
@@ -154,25 +164,29 @@ def accuracy_curves(dataset, x, y, rs=None):
         epsilon=1e-8
     )
 
+    # Split the dataset into training and validation sets
+    x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.2, random_state=rs)
+
     # Initialize arrays to record metrics during training
     training_accuracies = []
     cross_val_accuracies = []
     loss_values = []
 
     # Number of epochs
-    epochs = 100  # You can adjust this based on your preference
+    epochs = 50
 
     # Training loop
     for epoch in range(epochs):
+
         # Split the dataset into training and validation sets
-        x_train_epoch, x_val, y_train_epoch, y_val = train_test_split(x, y, test_size=0.2, random_state=epoch)
+        # x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.2, random_state=epoch)
 
         # Partial fit the model for one epoch
-        mlp.partial_fit(x_train_epoch, y_train_epoch, classes=np.unique(y))
+        mlp.partial_fit(x_train, y_train, classes=np.unique(y))
 
         # Training accuracy
-        y_train_pred = mlp.predict(x_train_epoch)
-        training_accuracy = accuracy_score(y_train_epoch, y_train_pred)
+        y_train_pred = mlp.predict(x_train)
+        training_accuracy = accuracy_score(y_train, y_train_pred)
         training_accuracies.append(training_accuracy)
 
         # Cross-validation accuracy
@@ -182,9 +196,6 @@ def accuracy_curves(dataset, x, y, rs=None):
 
         # Loss during training
         loss_values.append(mlp.loss_)
-
-    # Plotting
-    plt.figure(figsize=(8, 6))
 
     # Plot Training Accuracy
     plt.plot(range(1, epochs + 1), training_accuracies, label='Training Accuracy', linestyle='-')
@@ -203,24 +214,60 @@ def accuracy_curves(dataset, x, y, rs=None):
     plt.savefig(f'Images/{dataset}/Accuracy Curves.png')
     plt.close()
 
-def evaluate_model(mlp, x_test, y_test):
+def evaluate_model(dataset, mlp, x_train, x_test, y_train, y_test, rs):
+
+    # Start measuring time
+    start_time = time.time()
+
+    # Fit the model
+    mlp.fit(x_train, y_train)
+
+    # End measuring time
+    end_time = time.time()
+
+    # Calculate the time taken to fit the model
+    fitting_time = end_time - start_time
+
+    # Predictions
     y_pred = mlp.predict(x_test)
 
     # Calculate accuracy
     accuracy = accuracy_score(y_test, y_pred)
-    print("Accuracy:", accuracy)
 
-    # Calculate precision
-    precision = precision_score(y_test, y_pred)
-    print("Precision:", precision)
+    # Precision, Recall, F1-Score
+    precision, recall, f1_score, _ = precision_recall_fscore_support(y_test, y_pred, average='weighted')
 
-    # Calculate recall
-    recall = recall_score(y_test, y_pred)
-    print("Recall:", recall)
+    # Create a DataFrame to store the results
+    results_df = pd.DataFrame({
+        'Metric': ['Wall Clock Time', 'Accuracy', 'Precision', 'Recall', 'F1-Score'],
+        'Value': [fitting_time, accuracy, precision, recall, f1_score]
+    })
 
-    # Calculate F1-score
-    f1 = f1_score(y_test, y_pred)
-    print("F1-score:", f1)
+    # Round the values to 3 decimal points
+    results_df['Value'] = results_df['Value'].round(3)
 
-    # Calculate confusion matrix
-    conf_matrix = confusion_matrix(y_test, y_pred)
+    # Plotting the results in a table format
+    ax = plt.subplot(111, frame_on=False)  # No visible frame
+    ax.xaxis.set_visible(False)  # Hide x-axis
+    ax.yaxis.set_visible(False)  # Hide y-axis
+
+    # Bold the column labels
+    col_labels = [f'\textbf{{{label}}}' for label in results_df.columns]
+
+    table = ax.table(cellText=results_df.values,
+                    colLabels=results_df.columns,
+                    cellLoc='center',
+                    loc='center',
+                    colWidths=[0.2] * len(results_df.columns))
+    
+    # Set font weight to bold for column labels
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    for (i, j), cell in table._cells.items():
+        if i == 0:  # Bold the first row (column labels)
+            cell.set_text_props(fontweight='bold')
+
+    plt.title('Performance Metrics')
+    plt.tight_layout()
+    plt.savefig(f'Images/{dataset}/Performance Metrics.png')
+    plt.close()

@@ -230,4 +230,4 @@ def predict_labels(model, x, true_labels):
     ari = adjusted_rand_score(true_labels, predicted_labels)
     nmi = normalized_mutual_info_score(true_labels, predicted_labels)
 
-    return ari, nmi
+    return ari, nmi, predicted_labels

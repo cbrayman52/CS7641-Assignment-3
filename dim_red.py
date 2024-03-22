@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+
 from scipy.stats import kurtosis
 from sklearn.decomposition import PCA, FastICA
 from sklearn.random_projection import GaussianRandomProjection
@@ -37,7 +38,7 @@ def perform_pca(dataset, x, rs=None):
 
 def perform_ica(dataset, x, rs=None):
 
-    ica = FastICA(n_components=x.shape[1], random_state=rs)
+    ica = FastICA(n_components=5, random_state=rs)
     x_transformed = ica.fit_transform(x)
     kurtosis_values = np.abs(kurtosis(x_transformed))
 
