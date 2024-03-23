@@ -4,6 +4,7 @@ os.environ["OMP_NUM_THREADS"] = "4"
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+
 from scipy.stats import kurtosis
 from sklearn.decomposition import PCA, FastICA
 from sklearn.random_projection import GaussianRandomProjection
@@ -26,7 +27,7 @@ dataset1, dataset2 = datasets.get_datasets(rs)
 # 1. Apply the clustering algorithms on the datasets. You will report on each of the clustering         #
 #    algorithms for each dataset, resulting in 4 demonstrations.                                        #
 #########################################################################################################
-'''
+
 ari = [0] * 4
 nmi = [0] * 4
 # Guassian Mixture Model - Dataset 1
@@ -78,7 +79,6 @@ num_components = dim_red.perform_isomap('Step 2/Generated Dataset', dataset2['x2
 # 3. Re-apply the clustering algorithms on the set of dimensionality reduction datasets. This will      #
 #    result in 16 combinations of results of datasets, dimensionality reduction, and clustering methods.#
 #########################################################################################################
-
 ari = [0] * 16
 nmi = [0] * 16
 
@@ -116,7 +116,7 @@ ari[4], nmi[4], _ = clusters.predict_labels(GaussianMixture(n_components=3, cova
 ica = FastICA(n_components=4, random_state=rs)
 x_reduced = ica.fit_transform(dataset2['x2_train_scaled'])
 clusters.gmm_evaluation('Step 3/Generated Dataset/ICA', x_reduced, rs)
-ari[5], nmi[5], _ = clusters.predict_labels(GaussianMixture(n_components=12, covariance_type='tied', n_init=5, random_state=rs), x_reduced, dataset2['y2_train'])
+ari[5], nmi[5], _ = clusters.predict_labels(GaussianMixture(n_components=11, covariance_type='tied', n_init=5, random_state=rs), x_reduced, dataset2['y2_train'])
 
 # ICA - K Means - Dataset 1
 ica = FastICA(n_components=5, random_state=rs)
@@ -164,7 +164,7 @@ ari[12], nmi[12], _ = clusters.predict_labels(GaussianMixture(n_components=2, co
 isomap = Isomap(n_components=4, n_neighbors=10)
 x_reduced = isomap.fit_transform(dataset2['x2_train_scaled'])
 clusters.gmm_evaluation('Step 3/Generated Dataset/Isomap', x_reduced, rs)
-ari[13], nmi[13], _ = clusters.predict_labels(GaussianMixture(n_components=10, covariance_type='tied', n_init=5, random_state=rs), x_reduced, dataset2['y2_train'])
+ari[13], nmi[13], _ = clusters.predict_labels(GaussianMixture(n_components=11, covariance_type='tied', n_init=5, random_state=rs), x_reduced, dataset2['y2_train'])
 
 # Isomap - K Means - Dataset 1
 isomap = Isomap(n_components=4, n_neighbors=10)
@@ -201,7 +201,7 @@ nn.evaluate_model('Step 4/Generated Dataset/Baseline', mlp, dataset2['x2_train_s
 
 # PCA - Dataset 1
 mlp = MLPClassifier(hidden_layer_sizes=(5, 5), activation='tanh', solver='adam', learning_rate='constant', max_iter=200, random_state=rs)
-pca = PCA(n_components=4, random_state=rs)
+pca = PCA(n_components=5, random_state=rs)
 x_train_reduced = pca.fit_transform(dataset1['x1_train_scaled'])
 x_test_reduced = pca.transform(dataset1['x1_test_scaled'])
 nn.learning_curves('Step 4/Wine Quality/PCA', x_train_reduced, dataset1['y1_train'], rs)
@@ -240,8 +240,8 @@ nn.accuracy_curves('Step 4/Generated Dataset/ICA', x_train_reduced, dataset2['y2
 nn.evaluate_model('Step 4/Generated Dataset/ICA', mlp, x_train_reduced, x_test_reduced, dataset2['y2_train'], dataset2['y2_test'], rs)
 
 # Randomized Projections - Dataset 1
-mlp = MLPClassifier(hidden_layer_sizes=(5, 5), activation='tanh', solver='adam', learning_rate='constant', max_iter=200, random_state=rs)
-rp = GaussianRandomProjection(n_components=8, random_state=rs)
+mlp = MLPClassifier(hidden_layer_sizes=(5,), activation='tanh', solver='adam', learning_rate='constant', max_iter=200, random_state=rs)
+rp = GaussianRandomProjection(n_components=5, random_state=rs)
 x_train_reduced = rp.fit_transform(dataset1['x1_train_scaled'])
 x_test_reduced = rp.transform(dataset1['x1_test_scaled'])
 nn.learning_curves('Step 4/Wine Quality/RP', x_train_reduced, dataset1['y1_train'], rs)
@@ -278,7 +278,7 @@ nn.learning_curves('Step 4/Generated Dataset/Isomap', x_train_reduced, dataset2[
 nn.validation_curves('Step 4/Generated Dataset/Isomap', x_train_reduced, dataset2['y2_train'], rs)
 nn.accuracy_curves('Step 4/Generated Dataset/Isomap', x_train_reduced, dataset2['y2_train'], rs)
 nn.evaluate_model('Step 4/Generated Dataset/Isomap', mlp, x_train_reduced, x_test_reduced, dataset2['y2_train'], dataset2['y2_test'], rs)
-'''
+
 #########################################################################################################
 # 5. Using the same dataset as Step 4, use both previously generated clusters from Step 1 as new        #
 #    features in your dataset. Again, rerun your neural network learner on the newly projected data and #
@@ -292,20 +292,25 @@ new_dataset_1_train = np.column_stack((dataset1['x1_train_scaled'], labels.astyp
 
 ari, nmi, labels = clusters.predict_labels(GaussianMixture(n_components=2, covariance_type='tied', n_init=5, random_state=rs), dataset1['x1_test_scaled'], dataset1['y1_test'])
 new_dataset_1_test = np.column_stack((dataset1['x1_test_scaled'], labels.astype('float64')))
+ 
+mlp = MLPClassifier(hidden_layer_sizes=(5, 5), activation='identity', solver='adam', learning_rate='constant', max_iter=200, random_state=rs)
+nn.learning_curves('Step 5/Wine Quality/GMM', new_dataset_1_train, dataset1['y1_train'], rs)
+nn.validation_curves('Step 5/Wine Quality/GMM', new_dataset_1_train, dataset1['y1_train'], rs)
+nn.accuracy_curves('Step 5/Wine Quality/GMM', new_dataset_1_train, dataset1['y1_train'], rs)
+nn.evaluate_model('Step 5/Wine Quality/GMM', mlp, new_dataset_1_train, new_dataset_1_test, dataset1['y1_train'], dataset1['y1_test'], rs)
 
 # KMeans - Dataset 1
-ari, nmi, labels = clusters.predict_labels(KMeans(n_clusters=2, n_init=5, random_state=rs), dataset1['x1_train_scaled'], dataset1['y1_train'])
-new_dataset_1_train = np.column_stack((new_dataset_1_train, labels.astype('float64')))
+ari, nmi, labels = clusters.predict_labels(KMeans(n_clusters=8, n_init=5, random_state=rs), dataset1['x1_train_scaled'], dataset1['y1_train'])
+new_dataset_1_train = np.column_stack((dataset1['x1_train_scaled'], labels.astype('float64')))
 
-ari, nmi, labels = clusters.predict_labels(KMeans(n_clusters=2, n_init=5, random_state=rs), dataset1['x1_test_scaled'], dataset1['y1_test'])
-new_dataset_1_test = np.column_stack((new_dataset_1_test, labels.astype('float64')))
+ari, nmi, labels = clusters.predict_labels(KMeans(n_clusters=8, n_init=5, random_state=rs), dataset1['x1_test_scaled'], dataset1['y1_test'])
+new_dataset_1_test = np.column_stack((dataset1['x1_test_scaled'], labels.astype('float64')))
 
-# Evaluate Dataset 1
-mlp = MLPClassifier(hidden_layer_sizes=(5, 5), activation='tanh', solver='adam', learning_rate='constant', max_iter=200, early_stopping=True, random_state=rs)
-# nn.learning_curves('Step 5/Wine Quality', new_dataset_1_train, dataset1['y1_train'], rs)
-# nn.validation_curves('Step 5/Wine Quality', new_dataset_1_train, dataset1['y1_train'], rs)
-nn.accuracy_curves('Step 5/Wine Quality', new_dataset_1_train, dataset1['y1_train'], rs)
-nn.evaluate_model('Step 5/Wine Quality', mlp, new_dataset_1_train, new_dataset_1_test, dataset1['y1_train'], dataset1['y1_test'], rs)
+mlp = MLPClassifier(hidden_layer_sizes=(5, 5), activation='tanh', solver='adam', learning_rate='constant', max_iter=200, random_state=rs)
+nn.learning_curves('Step 5/Wine Quality/K Means', new_dataset_1_train, dataset1['y1_train'], rs)
+nn.validation_curves('Step 5/Wine Quality/K Means', new_dataset_1_train, dataset1['y1_train'], rs)
+nn.accuracy_curves('Step 5/Wine Quality/K Means', new_dataset_1_train, dataset1['y1_train'], rs)
+nn.evaluate_model('Step 5/Wine Quality/K Means', mlp, new_dataset_1_train, new_dataset_1_test, dataset1['y1_train'], dataset1['y1_test'], rs)
 
 
 # GMM - Dataset 2
@@ -326,7 +331,7 @@ new_dataset_2_test['KMeans Labels'] = labels
 
 # Evaluate Dataset 2
 mlp = MLPClassifier(hidden_layer_sizes=(5, 5), activation='tanh', solver='adam', learning_rate='constant', max_iter=200, random_state=rs)    
-# nn.learning_curves('Step 5/Generated Dataset', new_dataset_2_train, dataset2['y2_train'], rs)
-# nn.validation_curves('Step 5/Generated Dataset', new_dataset_2_train, dataset2['y2_train'], rs)
+nn.learning_curves('Step 5/Generated Dataset', new_dataset_2_train, dataset2['y2_train'], rs)
+nn.validation_curves('Step 5/Generated Dataset', new_dataset_2_train, dataset2['y2_train'], rs)
 nn.accuracy_curves('Step 5/Generated Dataset', new_dataset_2_train, dataset2['y2_train'], rs)
 nn.evaluate_model('Step 5/Generated Dataset', mlp, new_dataset_2_train, new_dataset_2_test, dataset2['y2_train'], dataset2['y2_test'], rs)

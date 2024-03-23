@@ -38,7 +38,7 @@ def perform_pca(dataset, x, rs=None):
 
 def perform_ica(dataset, x, rs=None):
 
-    ica = FastICA(n_components=5, random_state=rs)
+    ica = FastICA(n_components=x.shape[1], random_state=rs)
     x_transformed = ica.fit_transform(x)
     kurtosis_values = np.abs(kurtosis(x_transformed))
 
@@ -50,7 +50,7 @@ def perform_ica(dataset, x, rs=None):
     plt.plot(range(len(sorted_values)), sorted_values, marker='o')
     plt.xlabel('Component')
     plt.ylabel('Kurtosis')
-    plt.xticks(range(len(sorted_values)), sorted_indices)
+    plt.xticks(range(len(sorted_values)), range(1, x.shape[1]+1))
     plt.title('ICA Kurtosis Plot')
     for z, y in enumerate(sorted_values):
         plt.annotate(f'{y:.2f}', (z, y), textcoords='offset points', xytext=(10,5), ha='center', weight='bold', color='blue')

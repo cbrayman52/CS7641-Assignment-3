@@ -47,9 +47,9 @@ def gmm_evaluation(dataset, x, rs=None):
     # Plot the data
     grid_search_results_plot = grid_search_results[['Number of Components', 'Type of Covariance', 'BIC Score']]
     filtered_results = grid_search_results_plot[grid_search_results_plot.apply(lambda row: 'tied' in row.values, axis=1)]
-    filtered_results.plot(x='Number of Components', y='BIC Score', kind='line', marker='o')
+    filtered_results.plot(x='Number of Components', y='BIC Score', kind='line', marker='o', legend=False)
     plt.title('BIC Score vs Number of Components')
-    plt.xlabel('Number of Clusters')
+    plt.xlabel('Number of Components')
     plt.ylabel('BIC Score')
     plt.xticks(range(0, 20), range(2, 22))
     plt.grid(True)
@@ -121,9 +121,9 @@ def gmm_evaluation(dataset, x, rs=None):
     # Plot the data
     grid_search_results_plot = grid_search_results[['Number of Components', 'Type of Covariance', 'Silhouette Score']]
     filtered_results = grid_search_results_plot[grid_search_results_plot.apply(lambda row: 'tied' in row.values, axis=1)]
-    filtered_results.plot(x='Number of Components', y='Silhouette Score', kind='line', marker='o')
+    filtered_results.plot(x='Number of Components', y='Silhouette Score', kind='line', marker='o', legend=False)
     plt.title('Silhouette Score for Gaussian Mixture Model')
-    plt.xlabel('Number of Clusters')
+    plt.xlabel('Number of Components')
     plt.ylabel('Silhouette Score')
     plt.xticks(range(0, 20), range(2, 22))
     plt.grid(True)
@@ -178,7 +178,6 @@ def gmm_evaluation(dataset, x, rs=None):
     
     return
 
-
 def kmeans_evaluation(dataset, x, rs=None):
     # Calculate WCSS for different values of k
     wcss = []
@@ -189,8 +188,8 @@ def kmeans_evaluation(dataset, x, rs=None):
 
     # Plot the elbow curve
     plt.plot(range(1, 21), wcss, marker='o', linestyle='-')
-    plt.title('Scree Plot')
-    plt.xlabel('Number of Clusters')
+    plt.title('Inertia vs Number of Components')
+    plt.xlabel('Number of Components')
     plt.ylabel('WCSS (Within-Cluster Sum of Squares)')
     plt.xticks(np.arange(1, 21, 1))
     plt.grid(True)
@@ -213,7 +212,7 @@ def kmeans_evaluation(dataset, x, rs=None):
     # Plot silhouette scores for different numbers of clusters
     plt.plot(cluster_range, silhouette_scores, marker='o')
     plt.title('Silhouette Score for K-Means')
-    plt.xlabel('Number of Clusters')
+    plt.xlabel('Number of Components')
     plt.ylabel('Silhouette Score')
     plt.xticks(cluster_range)
     plt.grid(True)

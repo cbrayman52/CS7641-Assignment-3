@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
@@ -22,6 +24,13 @@ def get_datasets(rs):
             upper_limit = upper_limits.get(column, None)        
             if lower_limit is not None and upper_limit is not None:
                 wine_quality[column] = np.where((wine_quality[column] < lower_limit) | (wine_quality[column] > upper_limit), wine_quality[column].mean(), wine_quality[column])
+
+    # Correlation Matrix
+    plt.figure(figsize=(12, 10))
+    plt.title('Wine Quality Heatmap')
+    sns.heatmap(wine_quality.corr().abs(), annot=True, fmt='.3f', linewidths=1, cmap="YlGnBu")
+    plt.savefig('Images/Wine Quality Corr Matrix.png')
+    plt.close()
 
     # Alter dataset to be binary classificaion
     bins = (2, 6.5, 8)
@@ -81,6 +90,13 @@ def get_datasets(rs):
     columns = [f'feature_{i}' for i in range(x2.shape[1])]
     x2 = pd.DataFrame(x2, columns=columns)
     y2 = pd.DataFrame(y2, columns=['target']).squeeze()
+
+    # Correlation Matrix
+    plt.figure(figsize=(12, 10))
+    plt.title('Generated Dataset Heatmap')
+    sns.heatmap(x2.corr().abs(), annot=True, fmt='.3f', linewidths=1, cmap="YlGnBu")
+    plt.savefig('Images/Generated Dataset Corr Matrix.png')
+    plt.close()
 
     # Split the data into training and testing sets
     x2_train, x2_test, y2_train, y2_test = train_test_split(x2, y2, test_size=0.2, random_state=rs)
